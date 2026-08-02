@@ -1,6 +1,6 @@
 // CONFIG - PODMIEN SWÓJ TELEFON I ID FORMSPREE
-const FORMSPREE_ID = "TUTAJ_WKLEJ_SWOJ_ID"; 
-const PHONE_NUMBER = "48123456789"; // Twój numer w formacie np. 48123456789
+const FORMSPREE_ID = "https://formspree.io/f/xpqvvqaz"; 
+const PHONE_NUMBER = "48796770554"; // Twój numer w formacie np. 48123456789
 
 let chosenMode = ''; // 'RANDKA', 'KOLEDZY', 'NIE'
 let selectedActivities = [];
