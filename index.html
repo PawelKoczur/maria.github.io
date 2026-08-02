@@ -15,20 +15,22 @@
 
   <div class="card">
     
-    <!-- KROK 1: ZAPROSZENIE -->
+    <!-- KROK 1: HISTORIA I 3 OPCJE -->
     <div id="step1" class="step">
-      <div class="emoji-badge">✨</div>
+      <div class="emoji-badge">🎬</div>
       <h1>Cześć Mario! 👋</h1>
-      <p>Mam do Ciebie jedno małe pytanie... Wyjdziesz ze mną na randkę?</p>
+      <p>Szybki powrót do historii: powrót z Krakowa, wspólne kino, Ty płacisz za bilety w zamian za podwózkę, a ja mówię, że w ramach rewanżu zabieram Cię na kolację... 😉</p>
+      <p style="color: #cbd5e1; font-size: 0.9rem;">Żeby nie było niedomówień – jak to widzisz z Twojej strony?</p>
       
-      <button class="btn" onclick="acceptInvitation()">Jasne, bardzo chętnie! 😇</button>
-      <button class="btn btn-secondary" id="noBtn" onmouseover="dodgeNoButton()" onclick="handleNoClick(event)">Wolę zostać przy znajomości 🤝</button>
+      <button class="btn" onclick="selectMode('RANDKA')">🌹 Chętnie – i traktujmy to jako randkę!</button>
+      <button class="btn btn-secondary" style="margin-top: 10px;" onclick="selectMode('KOLEDZY')">🍕 Chętnie skoczę na jedzenie, ale po koleżeńsku</button>
+      <button class="btn btn-secondary" id="noBtn" style="margin-top: 10px;" onmouseover="dodgeNoButton()" onclick="handleNoClick(event)">🤝 Wolę zostać przy znajomości bez wyjścia</button>
     </div>
 
     <!-- KROK 2: WYBÓR AKTYWNOŚCI -->
     <div id="step2" class="step hidden">
       <div class="emoji-badge">🎯</div>
-      <h1>Super! Co masz ochotę robić?</h1>
+      <h1 id="step2Title">Super! Co masz ochotę robić?</h1>
       <p>Zaznacz opcje, które najbardziej Ci pasują:</p>
       
       <div class="activity-grid">
@@ -44,7 +46,7 @@
       
       <button class="btn" onclick="goToStep(3)">Przejdź do wyboru terminu 📅</button>
       <div>
-        <button class="btn-back" onclick="goBack('step1')">← Wróć do pytania</button>
+        <button class="btn-back" onclick="goBack('step1')">← Wróć do wyboru opcji</button>
       </div>
     </div>
 
@@ -62,21 +64,23 @@
       </div>
     </div>
 
-    <!-- EKRAN ODMAWIANIA -->
+    <!-- EKRAN ODMAWIANIA (Z POTWIERDZENIEM DECYZJI) -->
     <div id="rejected" class="step hidden">
       <div class="emoji-badge">🤝</div>
       <h1>Spoko Mario, pełen luz!</h1>
-      <p>Żaden problem! Zostajemy przy dobrych relacjach i widzimy się jak zawsze. Dzięki za szczerość!</p>
+      <p>Żaden problem! Zostajemy przy dobrych relacjach i widzimy się jak zawsze. Zależy mi na czystej sytuacji, więc dzięki za szczerość!</p>
+      
+      <button class="btn" style="margin-top: 15px;" onclick="sendResponse('NIE')">Potwierdź i wyślij odpowiedź 📩</button>
       <div>
-        <button class="btn-back" onclick="goBack('step1')">← Zmieniłam zdanie, wróć</button>
+        <button class="btn-back" onclick="goBack('step1')">← Zmieniłam zdanie, wróć do pytania</button>
       </div>
     </div>
 
     <!-- KROK 4: FINAŁ -->
     <div id="step4" class="step hidden">
-      <div class="emoji-badge">🎉</div>
-      <h1>Super, odpowiedź wysłana!</h1>
-      <p>Dostałem powiadomienie. Odezwę się na priv z konkretnym miejscem!</p>
+      <div class="emoji-badge" id="finalEmoji">🎉</div>
+      <h1 id="finalTitle">Super, odpowiedź wysłana!</h1>
+      <p id="finalText">Dostałem powiadomienie. Odezwę się na priv!</p>
       
       <a id="waBtn" href="#" target="_blank" class="btn btn-whatsapp hidden">Wyślij mi wybór na WhatsApp 💬</a>
     </div>
