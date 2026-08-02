@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wiadomość dla Marii ✨</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Biblioteka Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <!-- Pływające tło z sercami/gwiazdkami -->
+  <div class="bg-hearts" id="heartsContainer"></div>
+
+  <div class="card">
+    
+    <!-- KROK 1: ZAPROSZENIE -->
+    <div id="step1" class="step">
+      <div class="emoji-badge">✨</div>
+      <h1>Cześć Mario! 👋</h1>
+      <p>Mam do Ciebie jedno małe pytanie... Wyjdziesz ze mną na randkę?</p>
+      
+      <button class="btn" onclick="acceptInvitation()">Jasne, bardzo chętnie! 😇</button>
+      <button class="btn btn-secondary" id="noBtn" onmouseover="dodgeNoButton()" onclick="handleNoClick(event)">Wolę zostać przy znajomości 🤝</button>
+    </div>
+
+    <!-- KROK 2: WYBÓR AKTYWNOŚCI -->
+    <div id="step2" class="step hidden">
+      <div class="emoji-badge">🎯</div>
+      <h1>Super! Co masz ochotę robić?</h1>
+      <p>Zaznacz opcje, które najbardziej Ci pasują:</p>
+      
+      <div class="activity-grid">
+        <button class="act-btn" onclick="toggleActivity(this, '🍕 Dobre jedzenie')">🍕 Dobre jedzenie</button>
+        <button class="act-btn" onclick="toggleActivity(this, '☕ Kawa & ciacho')">☕ Kawa & ciacho</button>
+        <button class="act-btn" onclick="toggleActivity(this, '🌳 Spokojny spacer')">🌳 Spokojny spacer</button>
+        <button class="act-btn" onclick="toggleActivity(this, '🚴 Aktywność / Sport')">🚴 Aktywność / Sport</button>
+        <button class="act-btn" onclick="toggleActivity(this, '🧺 Piknik w plenerze')">🧺 Piknik w plenerze</button>
+        <button class="act-btn" onclick="toggleActivity(this, '🎲 Ty zadecyduj!')">🎲 Ty zadecyduj!</button>
+      </div>
+
+      <input type="text" id="customInput" placeholder="Inny własny pomysł? Wpisz tutaj..." />
+      
+      <button class="btn" onclick="goToStep(3)">Przejdź do wyboru terminu 📅</button>
+      <div>
+        <button class="btn-back" onclick="goBack('step1')">← Wróć do pytania</button>
+      </div>
+    </div>
+
+    <!-- KROK 3: INTERAKTYWNY KALENDARZ -->
+    <div id="step3" class="step hidden">
+      <div class="emoji-badge">📅</div>
+      <h1>Kiedy masz czas?</h1>
+      <p>Wybierz preferowaną datę spotkania:</p>
+      
+      <input type="date" id="datePicker" class="date-input" />
+
+      <button class="btn" style="margin-top: 20px;" onclick="sendResponse('TAK')">Wyślij odpowiedź ✨</button>
+      <div>
+        <button class="btn-back" onclick="goBack('step2')">← Wróć do wyboru atrakcji</button>
+      </div>
+    </div>
+
+    <!-- EKRAN ODMAWIANIA -->
+    <div id="rejected" class="step hidden">
+      <div class="emoji-badge">🤝</div>
+      <h1>Spoko Mario, pełen luz!</h1>
+      <p>Żaden problem! Zostajemy przy dobrych relacjach i widzimy się jak zawsze. Dzięki za szczerość!</p>
+      <div>
+        <button class="btn-back" onclick="goBack('step1')">← Zmieniłam zdanie, wróć</button>
+      </div>
+    </div>
+
+    <!-- KROK 4: FINAŁ -->
+    <div id="step4" class="step hidden">
+      <div class="emoji-badge">🎉</div>
+      <h1>Super, odpowiedź wysłana!</h1>
+      <p>Dostałem powiadomienie. Odezwę się na priv z konkretnym miejscem!</p>
+      
+      <a id="waBtn" href="#" target="_blank" class="btn btn-whatsapp hidden">Wyślij mi wybór na WhatsApp 💬</a>
+    </div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
