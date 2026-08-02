@@ -1,6 +1,6 @@
-// CONFIG - PODMIEN SWÓJ TELEFON I ID FORMSPREE
-const FORMSPREE_ID = "https://formspree.io/f/xpqvvqaz"; 
-const PHONE_NUMBER = "48796770554"; // Twój numer w formacie np. 48123456789
+// CONFIG - PODMIENIONY POPRAWNY ID FORMSPREE
+const FORMSPREE_ID = "xpqvvqaz"; 
+const PHONE_NUMBER = "48796770554";
 
 let chosenMode = ''; // 'RANDKA', 'KOLEDZY', 'NIE'
 let selectedActivities = [];
@@ -119,28 +119,27 @@ function sendResponse(decision) {
     Wybrana_data: decision === 'NIE' ? 'Brak' : (chosenDate || 'Nie podano')
   };
 
-  if (FORMSPREE_ID !== "TUTAJ_WKLEJ_SWOJ_ID") {
-    fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-  }
+  // Wysyłanie do Formspree
+  fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }).catch(err => console.error('Błąd wysyłania:', err));
 
   if (decision === 'TAK') {
-    if (PHONE_NUMBER !== "48123456789") {
-      const msg = encodeURIComponent(`Cześć! Wybrałam: ${modeLabel}. Atrakcje: ${actsText}. Data: ${chosenDate}.${customIdea ? ' Pomysł: ' + customIdea : ''}`);
-      const waBtn = document.getElementById('waBtn');
-      if (waBtn) {
-        waBtn.href = `https://wa.me/${PHONE_NUMBER}?text=${msg}`;
-        waBtn.classList.remove('hidden');
-      }
+    const msg = encodeURIComponent(`Cześć! Wybrałam: ${modeLabel}. Atrakcje: ${actsText}. Data: ${chosenDate}.${customIdea ? ' Pomysł: ' + customIdea : ''}`);
+    const waBtn = document.getElementById('waBtn');
+    if (waBtn) {
+      waBtn.href = `https://wa.me/${PHONE_NUMBER}?text=${msg}`;
+      waBtn.classList.remove('hidden');
     }
     
     confetti({ particleCount: 140, spread: 100, origin: { y: 0.4 } });
     showScreen('step4');
   } else {
-    // Finał przy wybraniu opcji "Bez wyjścia"
     document.getElementById('finalEmoji').innerText = '🤝';
     document.getElementById('finalTitle').innerText = 'Dzięki za odpowiedź!';
     document.getElementById('finalText').innerText = 'Dostałem powiadomienie. Pełen luz, widzimy się jak zawsze!';
