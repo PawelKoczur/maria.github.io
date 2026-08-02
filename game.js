@@ -23,6 +23,24 @@ function createFloatingHearts() {
 
 // Inicjalizacja po załadowaniu DOM
 window.addEventListener('DOMContentLoaded', () => {
+  // Sprawdzamy, czy wchodzisz Ty jako Admin (z dopiskiem w linku ?admin=tak)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isAdmin = urlParams.get('admin') === 'tak';
+
+  // Jeśli nie jesteś adminem I formularz został już wcześniej wysłany – ZABLOKUJ STRONĘ
+  if (!isAdmin && localStorage.getItem('form_submitted') === 'true') {
+    document.body.innerHTML = `
+      <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#080415; color:#fff; text-align:center; font-family:sans-serif; padding:20px;">
+        <div>
+          <h1 style="font-size:3.5rem; margin-bottom:10px;">🔒</h1>
+          <h2>Zaproszenie nieaktywne</h2>
+          <p style="color:#94a3b8; margin-top:10px;">Odpowiedź została już udzielona. Dziękuję!</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   createFloatingHearts();
 
   // Ustawienie domyślnej daty na jutro
@@ -117,6 +135,9 @@ function sendResponse(decision) {
     Wlasny_pomysl: customIdea || 'Brak',
     Wybrana_data: decision === 'NIE' ? 'Brak' : (chosenDate || 'Nie podano')
   };
+
+  // ZAPISUJEMY INFORMACJĘ O WYSŁANIU (AUTOMATYCZNA BLOKADA DLA MARII)
+  localStorage.setItem('form_submitted', 'true');
 
   // Wysyłanie danych do Formspree na Twój e-mail
   fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
