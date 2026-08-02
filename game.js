@@ -1,6 +1,5 @@
-// CONFIG - PODMIENIONY POPRAWNY ID FORMSPREE
+// CONFIG - TWÓJ ID FORMSPREE
 const FORMSPREE_ID = "xpqvvqaz"; 
-const PHONE_NUMBER = "48796770554";
 
 let chosenMode = ''; // 'RANDKA', 'KOLEDZY', 'NIE'
 let selectedActivities = [];
@@ -119,7 +118,7 @@ function sendResponse(decision) {
     Wybrana_data: decision === 'NIE' ? 'Brak' : (chosenDate || 'Nie podano')
   };
 
-  // Wysyłanie do Formspree
+  // Wysyłanie danych do Formspree na Twój e-mail
   fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
     method: 'POST',
     headers: { 
@@ -130,20 +129,12 @@ function sendResponse(decision) {
   }).catch(err => console.error('Błąd wysyłania:', err));
 
   if (decision === 'TAK') {
-    const msg = encodeURIComponent(`Cześć! Wybrałam: ${modeLabel}. Atrakcje: ${actsText}. Data: ${chosenDate}.${customIdea ? ' Pomysł: ' + customIdea : ''}`);
-    const waBtn = document.getElementById('waBtn');
-    if (waBtn) {
-      waBtn.href = `https://wa.me/${PHONE_NUMBER}?text=${msg}`;
-      waBtn.classList.remove('hidden');
-    }
-    
     confetti({ particleCount: 140, spread: 100, origin: { y: 0.4 } });
     showScreen('step4');
   } else {
     document.getElementById('finalEmoji').innerText = '🤝';
     document.getElementById('finalTitle').innerText = 'Dzięki za odpowiedź!';
     document.getElementById('finalText').innerText = 'Dostałem powiadomienie. Pełen luz, widzimy się jak zawsze!';
-    document.getElementById('waBtn').classList.add('hidden');
     showScreen('step4');
   }
 }
