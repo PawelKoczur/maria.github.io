@@ -2,6 +2,7 @@
 const FORMSPREE_ID = "TUTAJ_WKLEJ_SWOJ_ID"; 
 const PHONE_NUMBER = "48123456789"; // Twój numer w formacie np. 48123456789
 
+let chosenMode = ''; // 'RANDKA', 'KOLEDZY', 'NIE'
 let selectedActivities = [];
 let dodgeCount = 0;
 
@@ -34,7 +35,6 @@ window.addEventListener('DOMContentLoaded', () => {
     datePicker.min = new Date().toISOString().split('T')[0];
   }
 
-  // Zawsze startujemy od pierwszego kroku
   showScreen('step1');
 });
 
@@ -50,14 +50,14 @@ function goToStep(stepNumber) {
 
 function goBack(targetStepId) {
   if (targetStepId === 'step1') {
-    dodgeCount = 0; // Resetujemy licznik po powrocie
+    dodgeCount = 0;
     const btn = document.getElementById('noBtn');
     if (btn) btn.style.transform = 'translate(0, 0)';
   }
   showScreen(targetStepId);
 }
 
-// Uciekanie przycisku (3 razy ucieka, za 4. razem przechodzi dalej)
+// Uciekanie 3 razy dla opcji odmowy
 function dodgeNoButton() {
   if (dodgeCount < 3) {
     const btn = document.getElementById('noBtn');
@@ -73,12 +73,16 @@ function handleNoClick(e) {
     if (e) e.preventDefault();
     dodgeNoButton();
   } else {
+    chosenMode = 'NIE';
     showScreen('rejected');
   }
 }
 
-function acceptInvitation() {
-  confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+function selectMode(mode) {
+  chosenMode = mode;
+  if (mode === 'RANDKA') {
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+  }
   showScreen('step2');
 }
 
@@ -98,12 +102,21 @@ function sendResponse(decision) {
   const chosenDate = datePicker ? datePicker.value : '';
   const actsText = selectedActivities.join(', ') || 'Brak zaznaczonych';
   
+  let modeLabel = '';
+  if (decision === 'NIE' || chosenMode === 'NIE') {
+    modeLabel = 'Zostańmy przy znajomości bez wyjścia 🤝';
+  } else if (chosenMode === 'RANDKA') {
+    modeLabel = 'Wyjście na RANDKĘ! 🌹';
+  } else {
+    modeLabel = 'Wyjście PO KOLEŻEŃSKU 🍕';
+  }
+
   const data = {
     Adresat: 'Maria',
-    Decyzja: decision === 'TAK' ? 'Zgodziła się! 🎉' : 'Odrzuciła 🤝',
-    Wybrane_aktywnosci: actsText,
+    Wybór_Relacji: modeLabel,
+    Wybrane_aktywnosci: decision === 'NIE' ? 'Brak' : actsText,
     Wlasny_pomysl: customIdea || 'Brak',
-    Wybrana_data: chosenDate || 'Nie podano'
+    Wybrana_data: decision === 'NIE' ? 'Brak' : (chosenDate || 'Nie podano')
   };
 
   if (FORMSPREE_ID !== "TUTAJ_WKLEJ_SWOJ_ID") {
@@ -116,7 +129,7 @@ function sendResponse(decision) {
 
   if (decision === 'TAK') {
     if (PHONE_NUMBER !== "48123456789") {
-      const msg = encodeURIComponent(`Cześć! Wybrałam: ${actsText}. Data: ${chosenDate}.${customIdea ? ' Pomysł: ' + customIdea : ''} Widzimy się! ✨`);
+      const msg = encodeURIComponent(`Cześć! Wybrałam: ${modeLabel}. Atrakcje: ${actsText}. Data: ${chosenDate}.${customIdea ? ' Pomysł: ' + customIdea : ''}`);
       const waBtn = document.getElementById('waBtn');
       if (waBtn) {
         waBtn.href = `https://wa.me/${PHONE_NUMBER}?text=${msg}`;
@@ -127,6 +140,11 @@ function sendResponse(decision) {
     confetti({ particleCount: 140, spread: 100, origin: { y: 0.4 } });
     showScreen('step4');
   } else {
-    showScreen('rejected');
+    // Finał przy wybraniu opcji "Bez wyjścia"
+    document.getElementById('finalEmoji').innerText = '🤝';
+    document.getElementById('finalTitle').innerText = 'Dzięki za odpowiedź!';
+    document.getElementById('finalText').innerText = 'Dostałem powiadomienie. Pełen luz, widzimy się jak zawsze!';
+    document.getElementById('waBtn').classList.add('hidden');
+    showScreen('step4');
   }
 }
