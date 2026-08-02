@@ -1,11 +1,12 @@
-// CONFIG - TWÓJ ID FORMSPREE
+// CONFIG - UZUPEŁNIJ SWOJE DANE
 const FORMSPREE_ID = "xpqvvqaz"; 
+const JSONBIN_BIN_ID = "6a6fbc55da38895dfeb10e05"; 
+const JSONBIN_API_KEY = "$2a$10$JPU54/5/By8Q1hZ.VYlV/uefOYJvk6fnJDslwJdGXFddP3UfuImDe"; 
 
-let chosenMode = ''; // 'RANDKA', 'KOLEDZY', 'NIE'
+let chosenMode = ''; 
 let selectedActivities = [];
 let dodgeCount = 0;
 
-// Tworzenie serc w tle
 function createFloatingHearts() {
   const container = document.getElementById('heartsContainer');
   if (!container) return;
@@ -22,28 +23,39 @@ function createFloatingHearts() {
 }
 
 // Inicjalizacja po załadowaniu DOM
-window.addEventListener('DOMContentLoaded', () => {
-  // Sprawdzamy, czy wchodzisz Ty jako Admin (z dopiskiem w linku ?admin=tak)
+window.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const isAdmin = urlParams.get('admin') === 'tak';
 
-  // Jeśli nie jesteś adminem I formularz został już wcześniej wysłany – ZABLOKUJ STRONĘ
-  if (!isAdmin && localStorage.getItem('form_submitted') === 'true') {
-    document.body.innerHTML = `
-      <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#080415; color:#fff; text-align:center; font-family:sans-serif; padding:20px;">
-        <div>
-          <h1 style="font-size:3.5rem; margin-bottom:10px;">🔒</h1>
-          <h2>Zaproszenie nieaktywne</h2>
-          <p style="color:#94a3b8; margin-top:10px;">Odpowiedź została już udzielona. Dziękuję!</p>
-        </div>
-      </div>
-    `;
-    return;
+  // Omijamy sprawdzanie bazy tylko jeśli wchodzisz Ty jako Admin (?admin=tak)
+  if (!isAdmin) {
+    try {
+      // Sprawdzamy status w bazie chmurowej JSONBin
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY }
+      });
+      const data = await res.json();
+      
+      // Jeśli link w bazie jest już wyłączony (active === false):
+      if (data.record && data.record.active === false) {
+        document.body.innerHTML = `
+          <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#080415; color:#fff; text-align:center; font-family:sans-serif; padding:20px;">
+            <div>
+              <h1 style="font-size:3.5rem; margin-bottom:10px;">🔒</h1>
+              <h2>Zaproszenie nieaktywne</h2>
+              <p style="color:#94a3b8; margin-top:10px;">Odpowiedź została już udzielona lub link wygasł.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+    } catch (err) {
+      console.error('Błąd weryfikacji bazy:', err);
+    }
   }
 
   createFloatingHearts();
 
-  // Ustawienie domyślnej daty na jutro
   const datePicker = document.getElementById('datePicker');
   if (datePicker) {
     const tomorrow = new Date();
@@ -62,7 +74,7 @@ function showScreen(id) {
 }
 
 function goToStep(stepNumber) {
-  showScreen('step' + stepNumber);
+  showScreen('step1' && 'step' + stepNumber);
 }
 
 function goBack(targetStepId) {
@@ -74,7 +86,6 @@ function goBack(targetStepId) {
   showScreen(targetStepId);
 }
 
-// Uciekanie 3 razy dla opcji odmowy
 function dodgeNoButton() {
   if (dodgeCount < 3) {
     const btn = document.getElementById('noBtn');
@@ -112,7 +123,7 @@ function toggleActivity(btn, name) {
   }
 }
 
-function sendResponse(decision) {
+async function sendResponse(decision) {
   const customInput = document.getElementById('customInput');
   const datePicker = document.getElementById('datePicker');
   const customIdea = customInput ? customInput.value : '';
@@ -136,10 +147,21 @@ function sendResponse(decision) {
     Wybrana_data: decision === 'NIE' ? 'Brak' : (chosenDate || 'Nie podano')
   };
 
-  // ZAPISUJEMY INFORMACJĘ O WYSŁANIU (AUTOMATYCZNA BLOKADA DLA MARII)
-  localStorage.setItem('form_submitted', 'true');
+  // 1. BLOKUJEMY LINK W BAZIE NA CAŁYM ŚWIECIE
+  try {
+    fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify({ active: false })
+    });
+  } catch (e) {
+    console.error('Błąd blokowania bazy:', e);
+  }
 
-  // Wysyłanie danych do Formspree na Twój e-mail
+  // 2. WYSYŁAMY FORMULARZ DO FORMSPREE
   fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
     method: 'POST',
     headers: { 
