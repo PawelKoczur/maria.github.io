@@ -1,11 +1,15 @@
 // CONFIG - UZUPEŁNIJ SWOJE DANE
 const FORMSPREE_ID = "xpqvvqaz"; 
-const JSONBIN_BIN_ID = "6a6fbc55da38895dfeb10e05"; 
-const JSONBIN_API_KEY = "$2a$10$JPU54/5/By8Q1hZ.VYlV/uefOYJvk6fnJDslwJdGXFddP3UfuImDe"; 
+const JSONBIN_BIN_ID = "TUTAJ_WKLEJ_SWOJ_BIN_ID"; 
+const JSONBIN_API_KEY = "TUTAJ_WKLEJ_SWOJ_MASTER_KEY"; 
+
+// Ustaw czas odliczania w minutach (np. 15 minut):
+const COUNTDOWN_MINUTES = 15; 
 
 let chosenMode = ''; 
 let selectedActivities = [];
 let dodgeCount = 0;
+let timerInterval = null;
 
 function createFloatingHearts() {
   const container = document.getElementById('heartsContainer');
@@ -22,21 +26,114 @@ function createFloatingHearts() {
   }
 }
 
+// Blokowanie bazy w JSONBin
+async function disableBin() {
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify({ active: false })
+    });
+  } catch (e) {
+    console.error('Błąd blokowania bazy:', e);
+  }
+}
+
+// Funkcja obsługująca wygaśnięcie timera
+async function handleTimerExpired() {
+  if (timerInterval) clearInterval(timerInterval);
+
+  // Blokujemy bazę w chmurze
+  await disableBin();
+
+  // Wyświetlamy ekran wygaśnięcia czasu
+  document.body.innerHTML = `
+    <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#080415; color:#fff; text-align:center; font-family:sans-serif; padding:20px;">
+      <div>
+        <h1 style="font-size:3.5rem; margin-bottom:10px;">⏳</h1>
+        <h2>Czas minął!</h2>
+        <p style="color:#94a3b8; margin-top:10px;">Zaproszenie wygasło, ponieważ odpowiedź nie została udzielona na czas.</p>
+      </div>
+    </div>
+  `;
+}
+
+// Inicjalizacja i uruchomienie Timera
+function startCountdownTimer(isAdmin) {
+  // Jeśli już istnieje pasek timera, nie twórz kolejnego
+  if (document.getElementById('timerBar')) return;
+
+  const timerBar = document.createElement('div');
+  timerBar.id = 'timerBar';
+  timerBar.style.cssText = `
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-family: sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+  `;
+  document.body.appendChild(timerBar);
+
+  // Sprawdzamy czy czas otwarcia jest zapisany w pamięci sesji
+  let endTime = sessionStorage.getItem('invite_end_time');
+  if (!endTime) {
+    endTime = Date.now() + COUNTDOWN_MINUTES * 60 * 1000;
+    sessionStorage.setItem('invite_end_time', endTime);
+  } else {
+    endTime = parseInt(endTime, 10);
+  }
+
+  function updateTimer() {
+    const remaining = endTime - Date.now();
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      if (!isAdmin) {
+        handleTimerExpired();
+      } else {
+        timerBar.innerText = "⏱️ Czas minął (Tryb Admina)";
+      }
+      return;
+    }
+
+    const mins = Math.floor(remaining / (1000 * 60));
+    const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+    const formattedMins = String(mins).padStart(2, '0');
+    const formattedSecs = String(secs).padStart(2, '0');
+
+    timerBar.innerText = `⏱️ Czas na odpowiedź: ${formattedMins}:${formattedSecs}`;
+  }
+
+  updateTimer();
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
 // Inicjalizacja po załadowaniu DOM
 window.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const isAdmin = urlParams.get('admin') === 'tak';
 
-  // Omijamy sprawdzanie bazy tylko jeśli wchodzisz Ty jako Admin (?admin=tak)
   if (!isAdmin) {
     try {
-      // Sprawdzamy status w bazie chmurowej JSONBin
       const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
         headers: { 'X-Master-Key': JSONBIN_API_KEY }
       });
       const data = await res.json();
       
-      // Jeśli link w bazie jest już wyłączony (active === false):
       if (data.record && data.record.active === false) {
         document.body.innerHTML = `
           <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#080415; color:#fff; text-align:center; font-family:sans-serif; padding:20px;">
@@ -55,6 +152,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   createFloatingHearts();
+  startCountdownTimer(isAdmin);
 
   const datePicker = document.getElementById('datePicker');
   if (datePicker) {
@@ -74,7 +172,7 @@ function showScreen(id) {
 }
 
 function goToStep(stepNumber) {
-  showScreen('step1' && 'step' + stepNumber);
+  showScreen('step' + stepNumber);
 }
 
 function goBack(targetStepId) {
@@ -124,6 +222,10 @@ function toggleActivity(btn, name) {
 }
 
 async function sendResponse(decision) {
+  if (timerInterval) clearInterval(timerInterval);
+  const timerBar = document.getElementById('timerBar');
+  if (timerBar) timerBar.remove();
+
   const customInput = document.getElementById('customInput');
   const datePicker = document.getElementById('datePicker');
   const customIdea = customInput ? customInput.value : '';
@@ -147,19 +249,8 @@ async function sendResponse(decision) {
     Wybrana_data: decision === 'NIE' ? 'Brak' : (chosenDate || 'Nie podano')
   };
 
-  // 1. BLOKUJEMY LINK W BAZIE NA CAŁYM ŚWIECIE
-  try {
-    fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_API_KEY
-      },
-      body: JSON.stringify({ active: false })
-    });
-  } catch (e) {
-    console.error('Błąd blokowania bazy:', e);
-  }
+  // 1. ZAMYKAMY BAZĘ W CHMURZE
+  await disableBin();
 
   // 2. WYSYŁAMY FORMULARZ DO FORMSPREE
   fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
