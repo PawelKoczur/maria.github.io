@@ -1,10 +1,10 @@
 // CONFIG - UZUPEŁNIJ SWOJE DANE
 const FORMSPREE_ID = "xpqvvqaz"; 
-const JSONBIN_BIN_ID = "TUTAJ_WKLEJ_SWOJ_BIN_ID"; 
+const JSONBIN_BIN_ID = "6a6fbc55da38895dfeb10e05"; 
 const JSONBIN_API_KEY = "TUTAJ_WKLEJ_SWOJ_MASTER_KEY"; 
 
 // Ustaw czas odliczania w minutach (np. 15 minut):
-const COUNTDOWN_MINUTES = 15; 
+const COUNTDOWN_MINUTES = 5; 
 
 let chosenMode = ''; 
 let selectedActivities = [];
