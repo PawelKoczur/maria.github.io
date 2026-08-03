@@ -1,7 +1,7 @@
 // CONFIG - UZUPEŁNIJ SWOJE DANE
 const FORMSPREE_ID = "xpqvvqaz"; 
 const JSONBIN_BIN_ID = "6a6fbc55da38895dfeb10e05"; 
-const JSONBIN_API_KEY = "TUTAJ_WKLEJ_SWOJ_MASTER_KEY"; 
+const JSONBIN_API_KEY = "$2a$10$JPU54/5/By8Q1hZ.VYlV/uefOYJvk6fnJDslwJdGXFddP3UfuImDe"; 
 
 // Ustaw czas odliczania w minutach (np. 15 minut):
 const COUNTDOWN_MINUTES = 5; 
